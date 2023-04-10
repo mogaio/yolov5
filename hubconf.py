@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """
 PyTorch Hub models https://pytorch.org/hub/ultralytics_yolov5
@@ -40,6 +41,7 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
     if not verbose:
         LOGGER.setLevel(logging.WARNING)
     check_requirements(exclude=('opencv-python', 'tensorboard', 'thop'))
+    name_url = name
     name = Path(name)
     path = name.with_suffix('.pt') if name.suffix == '' and not name.is_dir() else name  # checkpoint path
     try:
@@ -59,15 +61,17 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
             except Exception:
                 model = attempt_load(path, device=device, fuse=False)  # arbitrary model
         else:
-            cfg = list((Path(__file__).parent / 'models').rglob(f'{path.stem}.yaml'))[0]  # model.yaml path
-            model = DetectionModel(cfg, channels, classes)  # create model
-            if pretrained:
-                ckpt = torch.load(attempt_download(path), map_location=device)  # load
-                csd = ckpt['model'].float().state_dict()  # checkpoint state_dict as FP32
-                csd = intersect_dicts(csd, model.state_dict(), exclude=['anchors'])  # intersect
-                model.load_state_dict(csd, strict=False)  # load
-                if len(ckpt['model'].names) == classes:
-                    model.names = ckpt['model'].names  # set class names attribute
+            #cfg = list((Path(__file__).parent / 'models').rglob(f'{path.stem}.yaml'))[0]  # model.yaml path
+            model = DetectMultiBackend(name_url, device=device, fuse=autoshape)
+            model = AutoShape(model)
+            #model = DetectionModel(cfg, channels, classes)  # create model
+            #if pretrained:
+                #ckpt = torch.load(attempt_download(path), map_location=device)  # load
+                #csd = ckpt['model'].float().state_dict()  # checkpoint state_dict as FP32
+                #csd = intersect_dicts(csd, model.state_dict(), exclude=['anchors'])  # intersect
+                #model.load_state_dict(csd, strict=False)  # load
+                #if len(ckpt['model'].names) == classes:
+                #    model.names = ckpt['model'].names  # set class names attribute
         if not verbose:
             LOGGER.setLevel(logging.INFO)  # reset to default
         return model.to(device)
@@ -80,7 +84,7 @@ def _create(name, pretrained=True, channels=3, classes=80, autoshape=True, verbo
 
 def custom(path='path/to/model.pt', autoshape=True, _verbose=True, device=None):
     # YOLOv5 custom or local model
-    return _create(path, autoshape=autoshape, verbose=_verbose, device=device)
+    return _create(path, pretrained=False, autoshape=autoshape, verbose=_verbose, device=device)
 
 
 def yolov5n(pretrained=True, channels=3, classes=80, autoshape=True, _verbose=True, device=None):

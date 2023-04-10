@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """ Utils to interact with the Triton Inference Server
 """
@@ -19,14 +20,15 @@ class TritonRemoteModel:
         Keyword arguments:
         url: Fully qualified address of the Triton server - for e.g. grpc://localhost:8000
         """
-
+        mode_name_ = 'pr_mix_onnx_model_0-009'
         parsed_url = urlparse(url)
         if parsed_url.scheme == 'grpc':
             from tritonclient.grpc import InferenceServerClient, InferInput
 
             self.client = InferenceServerClient(parsed_url.netloc)  # Triton GRPC client
             model_repository = self.client.get_model_repository_index()
-            self.model_name = model_repository.models[0].name
+            #self.model_name = model_repository.models[0].name
+            self.model_name = mode_name_
             self.metadata = self.client.get_model_metadata(self.model_name, as_json=True)
 
             def create_input_placeholders() -> typing.List[InferInput]:
@@ -38,7 +40,8 @@ class TritonRemoteModel:
 
             self.client = InferenceServerClient(parsed_url.netloc)  # Triton HTTP client
             model_repository = self.client.get_model_repository_index()
-            self.model_name = model_repository[0]['name']
+            #self.model_name = model_repository[0]['name']
+            self.model_name = mode_name_
             self.metadata = self.client.get_model_metadata(self.model_name)
 
             def create_input_placeholders() -> typing.List[InferInput]:
@@ -67,6 +70,8 @@ class TritonRemoteModel:
 
     def _create_inputs(self, *args, **kwargs):
         args_len, kwargs_len = len(args), len(kwargs)
+        #print(args_len, args)
+        #print(kwargs_len, kwargs)
         if not args_len and not kwargs_len:
             raise RuntimeError('No inputs provided.')
         if args_len and kwargs_len:
