@@ -2,7 +2,7 @@
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """ Utils to interact with the Triton Inference Server
 """
-
+import os
 import typing
 from urllib.parse import urlparse
 
@@ -20,7 +20,7 @@ class TritonRemoteModel:
         Keyword arguments:
         url: Fully qualified address of the Triton server - for e.g. grpc://localhost:8000
         """
-        mode_name_ = 'pr_mix_onnx_model_0-009'
+        mode_name_ = os.environ['QR_MODEL_NAME']
         parsed_url = urlparse(url)
         if parsed_url.scheme == 'grpc':
             from tritonclient.grpc import InferenceServerClient, InferInput
